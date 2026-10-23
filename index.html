@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101827">
+<title>Cash Counter Pro</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #101827;
+  color: #f8fafc;
+}
+
+header {
+  text-align: center;
+  padding: 25px 12px;
+  background: #172338;
+  border-bottom: 1px solid #334155;
+}
+
+header h1 {
+  margin: 0 0 8px;
+  color: #34d399;
+}
+
+header p {
+  margin: 0;
+  color: #cbd5e1;
+}
+
+.container {
+  width: 94%;
+  max-width: 850px;
+  margin: 20px auto;
+}
+
+.card {
+  background: #1e293b;
+  padding: 18px;
+  border-radius: 16px;
+  margin-bottom: 18px;
+  border: 1px solid #334155;
+}
+
+h2 {
+  margin-top: 0;
+  font-size: 19px;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.stat {
+  padding: 16px 10px;
+  border-radius: 12px;
+  background: #0f172a;
+}
+
+.stat span {
+  display: block;
+  color: #94a3b8;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.stat strong {
+  font-size: 21px;
+  color: #34d399;
+  overflow-wrap: anywhere;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 100px 105px;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 0;
+  border-bottom: 1px solid #334155;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.row label {
+  font-weight: bold;
+}
+
+.row input, .field input {
+  width: 100%;
+  padding: 11px;
+  border-radius: 8px;
+  border: 1px solid #475569;
+  background: #0f172a;
+  color: white;
+  font-size: 16px;
+}
+
+.subtotal {
+  text-align: right;
+  color: #34d399;
+  font-weight: bold;
+  overflow-wrap: anywhere;
+}
+
+.field {
+  margin: 12px 0;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 7px;
+  color: #cbd5e1;
+}
+
+button {
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 9px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  margin: 4px 3px 4px 0;
+}
+
+.primary {
+  background: #10b981;
+  color: #06281f;
+}
+
+.secondary {
+  background: #334155;
+  color: white;
+}
+
+.danger {
+  background: #ef4444;
+  color: white;
+}
+
+.whatsapp {
+  background: #22c55e;
+  color: #052e16;
+}
+
+.result {
+  font-size: 17px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.note {
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.history-item {
+  padding: 12px;
+  background: #0f172a;
+  border-radius: 9px;
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
+
+.history-item small {
+  color: #94a3b8;
+}
+
+@media(max-width: 480px) {
+  .row {
+    grid-template-columns: 1fr 78px;
+    gap: 8px;
+  }
+
+  .subtotal {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+
+  .stat strong {
+    font-size: 18px;
+  }
+}
+
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  header, .card {
+    background: white;
+    color: black;
+    border: 1px solid #ddd;
+  }
+
+  button, .note, #historyCard {
+    display: none !important;
+  }
+
+  .stat, .row input, .field input {
+    background: white;
+    color: black;
+  }
+
+  .stat strong, .subtotal {
+    color: black;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>💰 Cash Counter Pro</h1>
+  <p>Smart Indian Currency Counting System</p>
+</header>
+
+<main class="container">
+
+  <section class="summary">
+    <div class="stat">
+      <span>Grand Total</span>
+      <strong id="grandTotal">₹0</strong>
+    </div>
+
+    <div class="stat">
+      <span>Total Pieces</span>
+      <strong id="pieces">0</strong>
+    </div>
+
+    <div class="stat">
+      <span>Total Notes</span>
+      <strong id="notesTotal">0</strong>
+    </div>
+
+    <div class="stat">
+      <span>Total Coins</span>
+      <strong id="coinsTotal">0</strong>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:18px">
+    <h2>🧾 Count Your Cash</h2>
+    <div id="cashRows"></div>
+
+    <p class="result">
+      Total in words:<br>
+      <strong id="words">Zero Rupees Only</strong>
+    </p>
+
+    <p id="bundleInfo" class="note"></p>
+
+    <button class="primary" onclick="saveCount()">
+      💾 Save Count
+    </button>
+
+    <button class="secondary" onclick="copyReport()">
+      📋 Copy Report
+    </button>
+
+    <button class="secondary" onclick="downloadCSV()">
+      ⬇ Download CSV
+    </button>
+
+    <button class="secondary" onclick="window.print()">
+      🖨 Print / Save PDF
+    </button>
+
+    <button class="whatsapp" onclick="shareWhatsApp()">
+      WhatsApp Share
+    </button>
+
+    <button class="danger" onclick="resetCounts()">
+      Reset All
+    </button>
+  </section>
+
+  <section class="card">
+    <h2>⚖️ Cash Balance Check</h2>
+
+    <div class="field">
+      <label for="expected">Expected Cash (₹)</label>
+      <input id="expected" type="number" min="0"
+        step="0.01" placeholder="Enter expected amount"
+        oninput="calculate()">
+    </div>
+
+    <div class="result" id="difference">
+      Enter expected cash to compare.
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>📊 Cash Report</h2>
+    <div id="report" class="result">
+      Enter note quantities to begin.
+    </div>
+  </section>
+
+  <section class="card" id="historyCard">
+    <h2>🕘 Counting History</h2>
+    <div id="history"></div>
+
+    <button class="danger" onclick="clearHistory()">
+      Clear History
+    </button>
+  </section>
+
+  <p class="note">
+    Your cash counts and history are stored locally in this
+    browser. Clearing browser storage may erase saved records.
+    This is a cash calculator, not a bank or payment service.
+  </p>
+
+</main>
+
+<script>
+const denominations = [
+  { value: 500, type: "note" },
+  { value: 200, type: "note" },
+  { value: 100, type: "note" },
+  { value: 50, type: "note" },
+  { value: 20, type: "note" },
+  { value: 10, type: "note" },
+  { value: 20, type: "coin" },
+  { value: 10, type: "coin" },
+  { value: 5, type: "coin" },
+  { value: 2, type: "coin" },
+  { value: 1, type: "coin" }
+];
+
+const money = n => "₹" + n.toLocaleString("en-IN", {
+  maximumFractionDigits: 2
+});
+
+const rows = document.getElementById("cashRows");
+
+denominations.forEach((d, i) => {
+  const row = document.createElement("div");
+  row.className = "row";
+
+  const label = document.createElement("label");
+  label.textContent =
+    "₹" + d.value + " " +
+    (d.type === "note" ? "Note" : "Coin");
+
+  const input = document.createElement("input");
+  input.type = "number";
+  input.min = "0";
+  input.step = "1";
+  input.value = "0";
+  input.id = "qty" + i;
+  input.setAttribute("aria-label", label.textContent + " quantity");
+  input.addEventListener("input", calculate);
+
+  const subtotal = document.createElement("div");
+  subtotal.className = "subtotal";
+  subtotal.id = "sub" + i;
+  subtotal.textContent = "₹0";
+
+  row.append(label, input, subtotal);
+  rows.appendChild(row);
+});
+
+function quantity(i) {
+  const input = document.getElementById("qty" + i);
+  const n = Number(input.value);
+
+  if (!Number.isFinite(n) || n < 0 || !Number.isInteger(n)) {
+    return 0;
+  }
+
+  return n;
+}
+
+function getCount() {
+  let total = 0, notes = 0, coins = 0, notePieces = 0,
+      coinPieces = 0;
+  const lines = [];
+
+  denominations.forEach((d, i) => {
+    const q = quantity(i);
+    const amount = q * d.value;
+
+    total += amount;
+
+    if (d.type === "note") {
+      notes += amount;
+      notePieces += q;
+    } else {
+      coins += amount;
+      coinPieces += q;
+    }
+
+    document.getElementById("sub" + i).textContent = money(amount);
+
+    lines.push({
+      denomination: d.value,
+      type: d.type,
+      quantity: q,
+      amount
+    });
+  });
+
+  return {
+    total, notes, coins,
+    notePieces, coinPieces,
+    pieces: notePieces + coinPieces,
+    lines
+  };
+}
+
+function indianWords(num) {
+  if (num === 0) return "Zero Rupees Only";
+
+  const ones = [
+    "", "One", "Two", "Three", "Four", "Five", "Six",
+    "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve",
+    "Thirteen", "Fourteen", "Fifteen", "Sixteen",
+    "Seventeen", "Eighteen", "Nineteen"
+  ];
+
+  const tens = [
+    "", "", "Twenty", "Thirty", "Forty", "Fifty",
+    "Sixty", "Seventy", "Eighty", "Ninety"
+  ];
+
+  function underThousand(n) {
+    let s = "";
+
+    if (n >= 100) {
+      s += ones[Math.floor(n / 100)] + " Hundred ";
+      n %= 100;
+    }
+
+    if (n >= 20) {
+      s += tens[Math.floor(n / 10)] + " ";
+      n %= 10;
+    }
+
+    if (n > 0) s += ones[n] + " ";
+
+    return s;
+  }
+
+  num = Math.floor(num);
+
+  if (!Number.isSafeInteger(num) || num < 0) {
+    return "Amount out of range";
+  }
+
+  let result = "";
+
+  const groups = [
+    [10000000, "Crore"],
+    [100000, "Lakh"],
+    [1000, "Thousand"],
+    [1, ""]
+  ];
+
+  for (const [value, name] of groups) {
+    const part = Math.floor(num / value);
+    num %= value;
+
+    if (part > 0) {
+      result += underThousand(part) + name + " ";
+    }
+  }
+
+  return result.trim() + " Rupees Only";
+}
+
+function buildReport(c) {
+  const lines = [
+    "CASH COUNT REPORT",
+    "Date: " + new Date().toLocaleString("en-IN"),
+    ""
+  ];
+
+  c.lines.forEach(d => {
+    if (d.quantity > 0) {
+      lines.push(
+        "₹" + d.denomination + " " + d.type +
+        " × " + d.quantity + " = " + money(d.amount)
+      );
+    }
+  });
+
+  lines.push("");
+  lines.push("Notes Total: " + money(c.notes));
+  lines.push("Coins Total: " + money(c.coins));
+  lines.push("Total Pieces: " + c.pieces);
+  lines.push("Grand Total: " + money(c.total));
+  lines.push("Amount in words: " + indianWords(c.total));
+
+  return lines.join("\n");
+}
+
+function calculate() {
+  const c = getCount();
+
+  document.getElementById("grandTotal").textContent = money(c.total);
+  document.getElementById("pieces").textContent = c.pieces;
+  document.getElementById("notesTotal").textContent =
+    c.notePieces + " / " + money(c.notes);
+  document.getElementById("coinsTotal").textContent =
+    c.coinPieces + " / " + money(c.coins);
+
+  document.getElementById("words").textContent =
+    indianWords(c.total);
+
+  document.getElementById("bundleInfo").textContent =
+    "Notes: " + Math.floor(c.notePieces / 100) +
+    " full bundles + " + (c.notePieces % 100) +
+    " loose notes. 1 bundle = 100 notes.";
+
+  document.getElementById("report").textContent = buildReport(c);
+
+  const expectedInput = document.getElementById("expected");
+  const difference = document.getElementById("difference");
+
+  if (expectedInput.value.trim() === "") {
+    difference.textContent = "Enter expected cash to compare.";
+  } else {
+    const expected = Number(expectedInput.value);
+
+    if (!Number.isFinite(expected) || expected < 0) {
+      difference.textContent = "Enter a valid expected amount.";
+    } else {
+      const diff = Math.round((c.total - expected) * 100) / 100;
+
+      if (diff === 0) {
+        difference.textContent = "✅ Cash matches expected amount.";
+      } else if (diff > 0) {
+        difference.textContent = "⚠️ Extra cash: " + money(diff);
+      } else {
+        difference.textContent = "❌ Cash short by: " + money(-diff);
+      }
+    }
+  }
+}
+
+function resetCounts() {
+  if (!confirm("Reset all note and coin quantities?")) return;
+
+  denominations.forEach((d, i) => {
+    document.getElementById("qty" + i).value = 0;
+  });
+
+  document.getElementById("expected").value = "";
+  calculate();
+}
+
+function saveCount() {
+  const c = getCount();
+
+  if (!c.pieces) {
+    alert("Please enter some notes or coins first.");
+    return;
+  }
+
+  const record = {
+    date: new Date().toLocaleString("en-IN"),
+    total: c.total,
+    report: buildReport(c),
+    lines: c.lines
+  };
+
+  try {
+    const history = JSON.parse(
+      localStorage.getItem("cashHistory") || "[]"
+    );
+
+    history.unshift(record);
+    localStorage.setItem("cashHistory", JSON.stringify(history.slice(0, 50)));
+    renderHistory();
+
+    alert("Cash count saved successfully!");
+  } catch (e) {
+    alert("Could not save history. Browser storage may be full or disabled.");
+  }
+}
+
+function renderHistory() {
+  const container = document.getElementById("history");
+
+  try {
+    const history = JSON.parse(
+      localStorage.getItem("cashHistory") || "[]"
+    );
+
+    container.replaceChildren();
+
+    if (!history.length) {
+      container.textContent = "No saved counts yet.";
+      return;
+    }
+
+    history.forEach((item, index) => {
+      const box = document.createElement("div");
+      box.className = "history-item";
+
+      const title = document.createElement("strong");
+      title.textContent = money(item.total);
+
+      const date = document.createElement("small");
+      date.textContent = item.date;
+
+      const restore = document.createElement("button");
+      restore.className = "secondary";
+      restore.textContent = "Restore";
+      restore.onclick = () => {
+        item.lines.forEach((d, i) => {
+          if (i < denominations.length) {
+            document.getElementById("qty" + i).value = d.quantity;
+          }
+        });
+        calculate();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      };
+
+      const remove = document.createElement("button");
+      remove.className = "danger";
+      remove.textContent = "Delete";
+      remove.onclick = () => {
+        const current = JSON.parse(
+          localStorage.getItem("cashHistory") || "[]"
+        );
+        current.splice(index, 1);
+        localStorage.setItem("cashHistory", JSON.stringify(current));
+        renderHistory();
+      };
+
+      box.append(title, document.createElement("br"), date,
+        document.createElement("br"), restore, remove);
+
+      container.appendChild(box);
+    });
+  } catch (e) {
+    container.textContent = "Could not read saved history.";
+  }
+}
+
+function clearHistory() {
+  if (!confirm("Delete all saved cash counts?")) return;
+
+  localStorage.removeItem("cashHistory");
+  renderHistory();
+}
+
+async function copyReport() {
+  try {
+    await navigator.clipboard.writeText(buildReport(getCount()));
+    alert("Report copied!");
+  } catch (e) {
+    alert("Copy not supported here. Use Print / Save PDF instead.");
+  }
+}
+
+function downloadCSV() {
+  const c = getCount();
+
+  const data = [
+    ["Denomination", "Type", "Quantity", "Amount"],
+    ...c.lines.map(d => [
+      "₹" + d.denomination,
+      d.type,
+      d.quantity,
+      d.amount
+    ]),
+    [],
+    ["Total Notes Value", "", "", c.notes],
+    ["Total Coins Value", "", "", c.coins],
+    ["Total Pieces", "", "", c.pieces],
+    ["Grand Total", "", "", c.total]
+  ];
+
+  const csv = data.map(row =>
+    row.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(",")
+  ).join("\r\n");
+
+  const blob = new Blob(["\uFEFF" + csv], {
+    type: "text/csv;charset=utf-8;"
+  });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+
+  a.href = url;
+  a.download = "cash-count-report.csv";
+  a.click();
+
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function shareWhatsApp() {
+  const text = buildReport(getCount());
+  const url = "https://wa.me/?text=" + encodeURIComponent(text);
+  window.open(url, "_blank");
+}
+
+calculate();
+renderHistory();
+</script>
+
+</body>
+</html>
